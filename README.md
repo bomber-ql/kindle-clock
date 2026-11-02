@@ -1,6 +1,6 @@
 # Kindle Clock
 
-给 **Kindle 第 8 代（2016 款 Basic，600×800 黑白电子墨水屏、无触控）** 做的网页时钟：时间 + 日期 + 实时天气 + 未来 3 天预报 + 问候语 + 穿衣建议。
+给 **Kindle 第 8 代（2016 款 Basic，600×800 黑白电子墨水屏、无触控）** 做的网页时钟：时间 + 日期 + 实时天气 + 未来 3 天预报 + 问候语 + 穿衣建议，底部还有一只**探头探脑的线条猫咪**——会随机眨眼、抖耳朵。
 
 代码在 GitHub，部署在 **Cloudflare Pages**，天气走 **高德开放平台**（key 存在服务端，不进浏览器）。
 
@@ -136,6 +136,9 @@ tools/dev-server.mjs        本地预览服务器
 | 问候语时段文案 | `functions/api/weather.js` 的 `greetingFor()` |
 | 字号 / 排版 | `clock.css` |
 | 数字粗细 | `clock.css` 里 `#time` / `#temp` / `#deg` 的 `-webkit-text-stroke`（数值调小变细，设 0 关闭描边） |
+| 猫咪（大小/动作频率/关闭） | 造型在 `index.html` 的 `<svg id="cat">`，眨眼/抖耳间隔在 `clock.js` 的 `catScheduleBlink` / `catScheduleTwitch`，想关掉就把 `index.html` 里整个 `#catbox` 删掉 |
+
+猫咪的动作**不是连续动画**：e-ink 刷新慢，所以只是每 4.5–11 秒眨一次眼、每 18–42 秒抖一下耳朵的低频状态切换，残影靠 10 分钟一次的整页刷新清掉。若 Kindle 浏览器不支持 inline SVG，猫咪会静默隐藏，不影响时钟。
 | 日期想带年份 | `clock.js` 的 `renderClock()`，在前面拼 `d.getFullYear() + '年'` |
 | 一屏装不下的兜底 | `clock.js` 的 `SAFE_MARGIN` / `TIGHT_VIEWPORT` / `MIN_ZOOM`，`clock.css` 的 `#wrap.tight` 段 |
 
