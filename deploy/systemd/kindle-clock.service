@@ -1,0 +1,18 @@
+[Unit]
+Description=Kindle Clock (time + AMap weather)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/kindle-clock
+Environment=PORT=8787
+Environment=HOST=127.0.0.1
+Environment=CITY=北京
+Environment=AMAP_KEY=在这里填你的高德Key
+ExecStart=/usr/bin/node /opt/kindle-clock/server/server.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

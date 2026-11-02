@@ -71,7 +71,60 @@ AMAP_KEY=你的key CITY=北京 node tools/dev-server.mjs
 
 ---
 
-## 五、保证"一屏装得下"（不会像参考站那样要滑动）
+## 五、部署到你自己的服务器（Ubuntu + Nginx，国内最快最稳）
+
+Cloudflare 在国内访问时好时坏时，把时钟搬到自己的腾讯云/阿里云服务器上是终极方案：国内延迟个位数毫秒，也不用备案之外的任何流程（用你已备案的域名）。
+
+本项目自带一个**零依赖 Node 服务**（`server/server.mjs`），同时托管页面和 `/api/weather`，天气 Key 一样只在服务端。
+
+**1. 上传代码**
+
+```bash
+sudo mkdir -p /opt/kindle-clock && cd /opt/kindle-clock
+sudo git clone https://github.com/bomber-ql/kindle-clock.git .
+```
+
+**2. 确认 Node 18+**（低于 18 就装）
+
+```bash
+node -v
+# 需要安装时：
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+**3. 用 systemd 守护**（配置里填你的 Key 和城市）
+
+```bash
+sudo cp deploy/systemd/kindle-clock.service /etc/systemd/system/
+sudo sed -i 's/在这里填你的高德Key/你的真实Key/' /etc/systemd/system/kindle-clock.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now kindle-clock
+curl http://127.0.0.1:8787/api/weather     # 应该返回 JSON
+```
+
+**4. Nginx 加一个站点**（把域名换成你自己的）
+
+```bash
+sudo cp deploy/nginx/kindle-clock.conf /etc/nginx/conf.d/
+sudo sed -i 's/clock.example.com/你的域名/g' /etc/nginx/conf.d/kindle-clock.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**5. 签 HTTPS 证书**（certbot 没装就先 `sudo apt-get install -y certbot python3-certbot-nginx`）
+
+```bash
+sudo certbot --nginx -d 你的域名
+```
+
+**6. DNS**：在你的域名解析里加一条 **A 记录** → 这台服务器的公网 IP（安全组/防火墙放行 80、443）。
+
+> 服务默认只监听 `127.0.0.1:8787`，只让本机 Nginx 访问；想先用 IP 直连测试，把 systemd 里的 `HOST=127.0.0.1` 改成 `HOST=0.0.0.0` 并放行 8787 端口。
+> 天气数据在本机内存里缓存 10 分钟，一天最多 ~300 次请求，高德免费额度绰绰有余。
+
+---
+
+## 六、保证"一屏装得下"（不会像参考站那样要滑动）
 
 网上常见的 Kindle 时钟（比如 `kw6.netlify.app`）用 **rem + 百分比绝对定位**（`top: 17%`、`top: 24%`…）堆出高度，行数一变、字体一换就会顶出屏幕，差一点点就要滑动才能看全。
 
@@ -95,7 +148,7 @@ AMAP_KEY=你的key CITY=北京 node tools/dev-server.mjs
 
 ---
 
-## 六、绑定你自己的子域名
+## 七、绑定你自己的子域名
 
 假设你的域名是 `example.com`，想用 `clock.example.com`：
 
@@ -110,7 +163,7 @@ Worker 项目 → **Settings → Domains & Routes（域和路由）** → Add �
 
 ---
 
-## 七、在 Kindle 上使用
+## 八、在 Kindle 上使用
 
 1. Kindle 右上角菜单 → **体验版浏览器**（Experimental Browser）
 2. 地址栏输入 `clock.example.com`（老浏览器对 `https://` 前缀识别不太稳，直接输域名即可）
@@ -123,23 +176,26 @@ Worker 项目 → **Settings → Domains & Routes（域和路由）** → Add �
 
 ---
 
-## 八、文件说明 & 可调项
+## 九、文件说明 & 可调项
 
 ```
 public/index.html           页面骨架（table 布局，兼容老 WebKit）
 public/clock.css            纯黑白样式，600px 宽定版
 public/clock.js             前端逻辑：走时、拉天气、离线缓存、定时整页刷新
+shared/weather-core.js      天气核心（平台无关）：高德请求、问候语、穿衣建议
 src/worker.js               Cloudflare Worker：/api/weather 代理高德，其余走静态资源
+server/server.mjs           自托管 Node 服务（零依赖）：同样托管页面 + /api/weather
 wrangler.jsonc              Worker 配置（部署命令 npx wrangler deploy 读它）
+deploy/                     systemd 服务文件 + Nginx 站点配置（自托管用）
 tools/dev-server.mjs        本地预览服务器
 ```
 
 | 想改什么 | 改哪里 |
 |---|---|
 | 整页刷新间隔（默认 10 分钟） | `public/clock.js` 的 `RELOAD_MS` |
-| 城市 | Cloudflare 环境变量 `CITY`，或 URL 加 `?city=` |
-| 穿衣建议的判据 | `src/worker.js` 的 `dressingAdvice()` |
-| 问候语时段文案 | `src/worker.js` 的 `greetingFor()` |
+| 城市 | 环境变量 `CITY`，或 URL 加 `?city=` |
+| 穿衣建议的判据 | `shared/weather-core.js` 的 `dressingAdvice()` |
+| 问候语时段文案 | `shared/weather-core.js` 的 `greetingFor()` |
 | 字号 / 排版 | `public/clock.css` |
 | 数字粗细 | `public/clock.css` 里 `#time` / `#temp` / `#deg` 的 `-webkit-text-stroke`（数值调小变细，设 0 关闭描边） |
 | 猫咪（大小/动作频率/关闭） | 造型在 `public/index.html` 的 `<svg id="cat">`，眨眼/抖耳间隔在 `public/clock.js` 的 `catScheduleBlink` / `catScheduleTwitch`，想关掉就把 `public/index.html` 里整个 `#catbox` 删掉 |
@@ -152,7 +208,7 @@ tools/dev-server.mjs        本地预览服务器
 
 ---
 
-## 九、常见问题
+## 十、常见问题
 
 **还是要滑动才能看全**
 打开 `?debug=1`，看底部那行 `vp 600x733 · h 620 · zoom 1.00`。若 zoom 已经小于 1 还差一点，用 `?zoom=0.9` 再压一档；把那行数值发我，我可以直接把默认值写成你机器的。
@@ -161,7 +217,7 @@ tools/dev-server.mjs        本地预览服务器
 多半是用了新语法或新 CSS 的第三方时钟。本项目已按老 WebKit 全量降级；若你自己改代码，别引入 `let/const`、箭头函数、`fetch`、flex/grid。
 
 **天气一直是"示例数据"**
-说明 `AMAP_KEY` 没读到：确认在 Worker 的 **Settings → Variables and Secrets** 里加了（不是仓库里的 `.dev.vars`，那个只给本地用），并且加完之后**重新部署**过一次。
+说明 `AMAP_KEY` 没读到：Cloudflare 上确认在 Worker 的 **Settings → Variables and Secrets** 里加了；自托管则确认 systemd 服务文件里 `Environment=AMAP_KEY=...` 填了（不是仓库里的 `.dev.vars`，那个只给本地用）。改完都要**重启/重新部署一次**。页面底部会显示具体原因，例如 `高德错误：INVALID_USER_SCODE` 表示 Key 的平台类型选错了（应选「Web 服务」）。
 
 **时间不对**
 Kindle 的浏览器用设备时区，请确认 Kindle 系统时间准确（设置 → 设备和密码 → 时间）。
