@@ -271,11 +271,11 @@ function catTwitchOnce(id, cx) {
   var i = 0;
   function step() {
     if (i < seq.length) {
-      el.setAttribute('transform', 'rotate(' + seq[i] + ' ' + cx + ' 82)');
+      el.setAttribute('transform', 'rotate(' + seq[i] + ' ' + cx + ' 80)');
       i++;
       window.setTimeout(step, 170);
     } else {
-      el.setAttribute('transform', 'rotate(0 ' + cx + ' 82)');
+      el.setAttribute('transform', 'rotate(0 ' + cx + ' 80)');
     }
   }
   step();
@@ -285,9 +285,9 @@ function catScheduleTwitch() {
   var wait = 18000 + Math.random() * 24000;    // twitch every 18-42s
   window.setTimeout(function () {
     if (Math.random() < 0.5) {
-      catTwitchOnce('earL', 85);
+      catTwitchOnce('earL', 105);
     } else {
-      catTwitchOnce('earR', 215);
+      catTwitchOnce('earR', 195);
     }
     catScheduleTwitch();
   }, wait);
