@@ -5,6 +5,8 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden;      /* never let the page become scrollable */
   background: #ffffff;
   color: #000000;
 }
@@ -17,9 +19,27 @@ body {
 #wrap {
   width: 564px;          /* 600 - 2*18 padding */
   margin: 0 auto;
-  padding: 18px;
+  padding: 12px 18px;
   text-align: center;
 }
+
+/* Compact typography: applied by clock.js when the viewport is short
+   (Kindle browser viewport height varies with firmware / toolbar). */
+
+#wrap.tight #time { font-size: 116px; }
+#wrap.tight #date { font-size: 24px; }
+#wrap.tight #city { font-size: 24px; }
+#wrap.tight #temp { font-size: 64px; }
+#wrap.tight #deg  { font-size: 40px; vertical-align: 18px; }
+#wrap.tight #cond { font-size: 30px; vertical-align: 18px; }
+#wrap.tight #meta { font-size: 20px; }
+#wrap.tight .hr   { margin: 9px 0; }
+#wrap.tight .fcDay,
+#wrap.tight .fcW  { font-size: 21px; }
+#wrap.tight .fcT  { font-size: 19px; }
+#wrap.tight #greet { font-size: 25px; }
+#wrap.tight #dress { font-size: 22px; }
+#wrap.tight #foot  { font-size: 16px; }
 
 /* ---------- time ---------- */
 
@@ -42,7 +62,7 @@ body {
 .hr {
   height: 0;
   border-top: 2px solid #000000;
-  margin: 14px 0;
+  margin: 12px 0;
 }
 
 .hrLight {

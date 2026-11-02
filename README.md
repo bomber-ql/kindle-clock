@@ -66,7 +66,31 @@ AMAP_KEY=你的key CITY=北京 node tools/dev-server.mjs
 
 ---
 
-## 五、绑定你自己的子域名
+## 五、保证"一屏装得下"（不会像参考站那样要滑动）
+
+网上常见的 Kindle 时钟（比如 `kw6.netlify.app`）用 **rem + 百分比绝对定位**（`top: 17%`、`top: 24%`…）堆出高度，行数一变、字体一换就会顶出屏幕，差一点点就要滑动才能看全。
+
+本项目不猜高度，而是**开机实测视口后自己收缩**，两级保险：
+
+1. **紧凑档**：`clock.js` 读 `clientHeight`，视口高度 ≤ 740px 时自动给 `#wrap` 加 `tight` 类，字号和间距整体收紧一档（`clock.css` 里的 `#wrap.tight` 段）。
+2. **自动缩放**：收紧后仍超出视口，就整体等比缩小（优先用 `zoom`，不支持时退到 `transform: scale()`），下限 0.6。
+
+页面同时 `overflow: hidden`，永远不会出现滚动条。
+
+### 真机校准（两个 URL 参数）
+
+| 参数 | 作用 |
+|---|---|
+| `?debug=1` | 底部附加一行：`vp 600x733 · h 620 · zoom 1.00`（视口尺寸 / 内容高度 / 缩放比），照抄这行数发我，我能精确调 |
+| `?zoom=0.92` | 手动指定缩放，差一点点时用它微调（0.6–1.5） |
+
+例：`https://clock.example.com/?debug=1`
+
+要改默认行为，改 `clock.js` 顶部三个常量：`SAFE_MARGIN`（底部留白）、`TIGHT_VIEWPORT`（触发紧凑档的视口高度）、`MIN_ZOOM`。
+
+---
+
+## 六、绑定你自己的子域名
 
 假设你的域名是 `example.com`，想用 `clock.example.com`：
 
@@ -81,7 +105,7 @@ Pages → 自定义域 → 添加 `clock.example.com`，Cloudflare 会自动建�
 
 ---
 
-## 六、在 Kindle 上使用
+## 七、在 Kindle 上使用
 
 1. Kindle 右上角菜单 → **体验版浏览器**（Experimental Browser）
 2. 地址栏输入 `clock.example.com`（老浏览器对 `https://` 前缀识别不太稳，直接输域名即可）
@@ -94,7 +118,7 @@ Pages → 自定义域 → 添加 `clock.example.com`，Cloudflare 会自动建�
 
 ---
 
-## 七、文件说明 & 可调项
+## 八、文件说明 & 可调项
 
 ```
 index.html                  页面骨架（table 布局，兼容老 WebKit）
@@ -111,12 +135,16 @@ tools/dev-server.mjs        本地预览服务器
 | 穿衣建议的判据 | `functions/api/weather.js` 的 `dressingAdvice()` |
 | 问候语时段文案 | `functions/api/weather.js` 的 `greetingFor()` |
 | 字号 / 排版 | `clock.css` |
+| 一屏装不下的兜底 | `clock.js` 的 `SAFE_MARGIN` / `TIGHT_VIEWPORT` / `MIN_ZOOM`，`clock.css` 的 `#wrap.tight` 段 |
 
 天气拿不到时，页面会退回到上一次成功的数据并标注"离线缓存"，不会开天窗。
 
 ---
 
-## 八、常见问题
+## 九、常见问题
+
+**还是要滑动才能看全**
+打开 `?debug=1`，看底部那行 `vp 600x733 · h 620 · zoom 1.00`。若 zoom 已经小于 1 还差一点，用 `?zoom=0.9` 再压一档；把那行数值发我，我可以直接把默认值写成你机器的。
 
 **页面空白 / 只显示一半**
 多半是用了新语法或新 CSS 的第三方时钟。本项目已按老 WebKit 全量降级；若你自己改代码，别引入 `let/const`、箭头函数、`fetch`、flex/grid。

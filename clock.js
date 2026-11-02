@@ -8,7 +8,14 @@ var WEATHER_URL = 'api/weather';
 var WEEK_CN = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 var STORE_KEY = 'kindle-clock-weather';
 
+/* --- fit-to-screen (Kindle viewport height varies with firmware/toolbars) --- */
+var SAFE_MARGIN = 8;      // px kept free at the bottom
+var MIN_ZOOM = 0.6;
+var TIGHT_VIEWPORT = 740; // <= this height -> compact typography first
+
 var lastWeather = null;
+var zoomSupported = null;
+var lastFootText = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -31,17 +38,83 @@ function renderClock() {
   setText('date', d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN[d.getDay()]);
 }
 
-/* --------------------------------------------------------------- vertical */
-/* Old WebKit has no flexbox, so center the block by padding math. */
+/* ------------------------------------------------------------ fit to screen */
+/* Old WebKit has no flexbox and no vh unit, so fit the block by hand:
+   1) pick compact typography when the viewport is short
+   2) if it still overflows, scale the whole block down (never scroll)
+   Manual override for real-device calibration: ?zoom=0.92  / debug: ?debug=1 */
 
-function centerVertically() {
+function urlParam(name) {
+  var s = window.location.search || '';
+  var re = new RegExp('[?&]' + name + '=([^&]*)');
+  var m = s.match(re);
+  return m ? m[1] : null;
+}
+
+function applyScale(el, z) {
+  if (zoomSupported === null) {
+    el.style.zoom = '0.9';
+    zoomSupported = (el.style.zoom === '0.9' || el.style.zoom === '0.9px');
+    el.style.zoom = '1';
+  }
+  if (z >= 1) {
+    el.style.zoom = '1';
+    el.style.webkitTransform = 'none';
+    el.style.transform = 'none';
+    return;
+  }
+  if (zoomSupported) {
+    el.style.zoom = String(z);
+  } else {
+    el.style.webkitTransform = 'scale(' + z + ')';
+    el.style.transform = 'scale(' + z + ')';
+    el.style.webkitTransformOrigin = 'top center';
+    el.style.transformOrigin = 'top center';
+  }
+}
+
+function layout() {
   var wrap = $('wrap');
   if (!wrap) return;
+
   var vh = document.documentElement.clientHeight || 758;
-  var h = wrap.offsetHeight || 0;
-  var top = Math.floor((vh - h) / 2) - 10;
-  if (top < 8) top = 8;
-  wrap.style.paddingTop = top + 'px';
+  var vw = document.documentElement.clientWidth || 600;
+  var avail = vh - SAFE_MARGIN;
+
+  wrap.className = (vh <= TIGHT_VIEWPORT) ? 'tight' : '';
+  applyScale(wrap, 1);
+  wrap.style.paddingTop = '12px';
+
+  var natural = wrap.offsetHeight || 0;
+  var forced = parseFloat(urlParam('zoom'));
+  var z = 1;
+
+  if (forced > 0.3 && forced <= 1.5) {
+    z = forced;
+  } else if (natural > avail && natural > 0) {
+    z = avail / natural;
+    if (z < MIN_ZOOM) z = MIN_ZOOM;
+  }
+
+  if (z < 1) {
+    applyScale(wrap, z);
+    wrap.style.paddingTop = '6px';
+  } else {
+    // natural was measured with 12px top + 12px bottom padding
+    var content = natural - 24;
+    var top = Math.floor((vh - content) / 2) - 6;
+    if (top < 12) top = 12;
+    if (content + top + 12 > vh) top = Math.max(8, vh - content - 12);
+    wrap.style.paddingTop = top + 'px';
+  }
+
+  if (urlParam('debug')) {
+    var foot = $('foot');
+    if (foot) {
+      foot.innerHTML = lastFootText +
+        '<br>vp ' + vw + 'x' + vh + ' &#183; h ' + natural + ' &#183; zoom ' + z.toFixed(2);
+    }
+  }
 }
 
 /* ---------------------------------------------------------------- weather */
@@ -143,9 +216,10 @@ function renderWeather(data, stale) {
   var foot = '天气更新 ' + rt;
   if (data.demo) foot += ' &#183; 示例数据';
   if (stale) foot += ' &#183; 离线缓存';
+  lastFootText = foot;
   setText('foot', foot);
 
-  centerVertically();
+  layout();
 }
 
 function loadWeather() {
@@ -158,8 +232,9 @@ function loadWeather() {
       renderWeather(cached, true);
     } else {
       setText('city', '天气暂不可用');
-      setText('foot', '天气获取失败，稍后自动重试');
-      centerVertically();
+      lastFootText = '天气获取失败，稍后自动重试';
+      setText('foot', lastFootText);
+      layout();
     }
   });
 }
@@ -168,7 +243,13 @@ function loadWeather() {
 
 function boot() {
   renderClock();
+  layout();
   window.setInterval(renderClock, 1000);
+  if (window.addEventListener) {
+    window.addEventListener('resize', layout, false);
+  } else {
+    window.onresize = layout;
+  }
   loadWeather();
   // every 10 min: reload the whole page so the e-ink panel does a full refresh
   window.setTimeout(function () {
