@@ -5,6 +5,9 @@
  * With AMAP_KEY in the environment it hits AMap; without it, demo data.
  *
  *   AMAP_KEY=xxx CITY=北京 node tools/dev-server.mjs
+ *
+ * It also auto-loads a .dev.vars file in the project root (KEY=value lines),
+ * so you can just drop your key there instead of typing it every time.
  */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -13,6 +16,20 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 8787);
+
+/* Read .dev.vars (same format wrangler uses) into process.env if present. */
+(function loadDevVars() {
+  try {
+    const txt = fs.readFileSync(path.join(root, '.dev.vars'), 'utf8');
+    txt.split(/\r?\n/).forEach(function (line) {
+      const m = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/.exec(line);
+      if (!m) return;
+      if (process.env[m[1]] === undefined) {
+        process.env[m[1]] = m[2].replace(/^["']|["']$/g, '').trim();
+      }
+    });
+  } catch (e) { /* no .dev.vars -> fall back to real env vars */ }
+})();
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
