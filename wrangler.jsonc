@@ -1,0 +1,11 @@
+{
+  // Kindle Clock - Cloudflare Worker with static assets.
+  // `npx wrangler deploy` (the default deploy command in the dashboard
+  // "Set up your application" screen) reads this file.
+  "name": "kindle-clock",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public"
+  }
+}

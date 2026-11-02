@@ -1,13 +1,15 @@
 /**
- * Cloudflare Pages Function: /api/weather
- * Proxies AMap (高德) weather API so the AMap key never reaches the browser
- * and the old Kindle WebKit does not have to deal with CORS.
+ * Kindle Clock Worker
  *
- * Env vars (set in Cloudflare Pages > Settings > Environment variables):
+ * - /api/weather  -> proxies AMap (高德) weather so the key never reaches
+ *   the browser and the old Kindle WebKit avoids CORS issues.
+ * - everything else -> static assets in ./public (wrangler assets binding).
+ *
+ * Env vars (Cloudflare > Workers & Pages > kindle-clock > Settings > Variables):
  *   AMAP_KEY  - AMap Web service key (申请时服务平台选 "Web服务")
  *   CITY      - city name or adcode, default 北京
  *
- * Without AMAP_KEY it returns plausible demo data so the layout can be checked.
+ * Without AMAP_KEY the API returns plausible demo data for layout checks.
  */
 
 var WEEK_CN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -145,9 +147,8 @@ async function fetchAMap(key, city, extensions) {
   return res.json();
 }
 
-export async function onRequestGet(context) {
-  var request = context.request;
-  var env = context.env || {};
+async function handleWeather(request, env, ctx) {
+  env = env || {};
   var url = new URL(request.url);
   var city = url.searchParams.get('city') || env.CITY || '北京';
   var key = env.AMAP_KEY;
@@ -219,9 +220,23 @@ export async function onRequestGet(context) {
     };
 
     var response = jsonResponse(body);
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    ctx.waitUntil(cache.put(cacheKey, response.clone()));
     return response;
   } catch (e) {
     return jsonResponse(demoData(city, '天气服务暂不可用'));
   }
 }
+
+export default {
+  async fetch(request, env, ctx) {
+    var url = new URL(request.url);
+    if (url.pathname === '/api/weather') {
+      return handleWeather(request, env, ctx);
+    }
+    // Static assets (public/) via the assets binding; falls back to a 404.
+    if (env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
+    return new Response('not found', { status: 404 });
+  }
+};

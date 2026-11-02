@@ -1,7 +1,7 @@
 /**
  * Tiny local preview server (no wrangler needed).
  *   node tools/dev-server.mjs      ->  http://localhost:8787
- * Serves the static files and mounts the real Pages Function at /api/weather.
+ * Serves public/ and mounts the real Worker (src/worker.js) at /api/weather.
  * With AMAP_KEY in the environment it hits AMap; without it, demo data.
  *
  *   AMAP_KEY=xxx CITY=北京 node tools/dev-server.mjs
@@ -15,6 +15,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const pubDir = path.join(root, 'public');
 const port = Number(process.env.PORT || 8787);
 
 /* Read .dev.vars (same format wrangler uses) into process.env if present. */
@@ -44,13 +45,13 @@ const server = http.createServer(async (req, res) => {
 
   if (u.pathname === '/api/weather') {
     try {
-      const mod = await import(pathToFileURL(path.join(root, 'functions', 'api', 'weather.js')).href);
-      const out = await mod.onRequestGet({
-        request: new Request('http://localhost' + req.url),
-        env: { AMAP_KEY: process.env.AMAP_KEY || '', CITY: process.env.CITY || '' },
-        waitUntil: function () {}
-      });
-      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      const mod = await import(pathToFileURL(path.join(root, 'src', 'worker.js')).href);
+      const out = await mod.default.fetch(
+        new Request('http://localhost' + req.url),
+        { AMAP_KEY: process.env.AMAP_KEY || '', CITY: process.env.CITY || '' },
+        { waitUntil: function () {} }
+      );
+      res.writeHead(out.status, { 'content-type': 'application/json; charset=utf-8' });
       res.end(await out.text());
     } catch (e) {
       res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
@@ -61,8 +62,8 @@ const server = http.createServer(async (req, res) => {
 
   let rel = decodeURIComponent(u.pathname);
   if (rel === '/' || rel === '') rel = '/index.html';
-  const file = path.join(root, rel);
-  if (!file.startsWith(root)) {
+  const file = path.join(pubDir, rel);
+  if (!file.startsWith(pubDir)) {
     res.writeHead(403);
     res.end('forbidden');
     return;

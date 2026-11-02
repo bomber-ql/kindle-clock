@@ -2,11 +2,13 @@
   "name": "kindle-clock",
   "version": "1.0.0",
   "private": true,
-  "description": "Time + weather dashboard for Kindle 8th gen (Basic 2016, 600x800 e-ink)",
+  "description": "Kindle 8th gen (Basic 2016, 600x800 e-ink) web clock: time + AMap weather, built for old WebKit (ES5 only), deployed as a Cloudflare Worker with static assets",
   "scripts": {
-    "dev": "wrangler pages dev ."
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "node tools/dev-server.mjs"
   },
   "devDependencies": {
-    "wrangler": "^3.60.0"
+    "wrangler": "^4.0.0"
   }
 }
