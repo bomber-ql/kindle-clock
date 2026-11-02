@@ -240,11 +240,83 @@ function loadWeather() {
   });
 }
 
+/* --------------------------------------------------------------- peeking cat */
+/* Not continuous animation -- e-ink refreshes slowly, so the cat only changes
+   state every few seconds (a rare partial refresh, cleared by the periodic
+   full-page reload anyway). */
+
+function catSetEyes(open) {
+  var o = document.getElementById('eyesOpen');
+  var c = document.getElementById('eyesClosed');
+  if (!o || !c) return;
+  o.setAttribute('display', open ? 'inline' : 'none');
+  c.setAttribute('display', open ? 'none' : 'inline');
+}
+
+function catScheduleBlink() {
+  var wait = 4500 + Math.random() * 6500;      // blink every 4.5-11s
+  window.setTimeout(function () {
+    catSetEyes(false);
+    window.setTimeout(function () {
+      catSetEyes(true);
+      catScheduleBlink();
+    }, 400);
+  }, wait);
+}
+
+function catTwitchOnce(id, cx) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var seq = [-5, 0, 4, 0];
+  var i = 0;
+  function step() {
+    if (i < seq.length) {
+      el.setAttribute('transform', 'rotate(' + seq[i] + ' ' + cx + ' 100)');
+      i++;
+      window.setTimeout(step, 170);
+    } else {
+      el.setAttribute('transform', 'rotate(0 ' + cx + ' 100)');
+    }
+  }
+  step();
+}
+
+function catScheduleTwitch() {
+  var wait = 18000 + Math.random() * 24000;    // twitch every 18-42s
+  window.setTimeout(function () {
+    if (Math.random() < 0.5) {
+      catTwitchOnce('earL', 70);
+    } else {
+      catTwitchOnce('earR', 230);
+    }
+    catScheduleTwitch();
+  }, wait);
+}
+
+function catBoot() {
+  var box = $('catbox');
+  if (!box) return;
+  var ok = false;
+  try {
+    ok = !!(document.createElementNS &&
+      document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect);
+  } catch (e) {
+    ok = false;
+  }
+  if (!ok) {              // no inline SVG -> hide silently, clock still works
+    box.style.display = 'none';
+    return;
+  }
+  catScheduleBlink();
+  catScheduleTwitch();
+}
+
 /* ------------------------------------------------------------------ boot */
 
 function boot() {
   renderClock();
   layout();
+  catBoot();
   window.setInterval(renderClock, 1000);
   if (window.addEventListener) {
     window.addEventListener('resize', layout, false);

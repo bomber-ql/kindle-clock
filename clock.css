@@ -123,6 +123,17 @@ body {
   margin-top: 10px;
 }
 
+/* peeking cat: line art behind the bottom rule */
+
+#catbox {
+  margin-top: 4px;
+}
+
+#catbox svg {
+  width: 300px;
+  height: 120px;
+}
+
 /* ------------------------------------------------------------------------ */
 /* Compact typography: applied by clock.js when the viewport is short
    (Kindle browser viewport height varies with firmware / toolbar). */
@@ -140,3 +151,4 @@ body {
 #wrap.tight #greet { font-size: 22px; }
 #wrap.tight #dress { font-size: 19px; }
 #wrap.tight #foot  { font-size: 14px; margin-top: 6px; }
+#wrap.tight #catbox svg { width: 260px; height: 104px; }
