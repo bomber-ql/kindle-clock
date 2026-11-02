@@ -44,8 +44,9 @@ AMAP_KEY=你的key CITY=北京 node tools/dev-server.mjs
 2. 应用里点 **添加 Key**，服务平台选 **Web 服务**（选错会报 `INVALID_USER_SCODE`）
 3. 复制那串 Key
 
-> 本项目的接口是免费的「天气查询」Web 服务 API，个人开发者额度足够一台 Kindle 用。
-> 换城市：改环境变量 `CITY`（支持中文城市名或 adcode，如 `北京` / `110000`）；也可以在网址后加 `?city=上海` 临时试。
+> 本项目的接口是免费的「天气查询」Web 服务 API（`restapi.amap.com/v3/weather/weatherInfo`），个人开发者额度足够一台 Kindle 用。
+> 换城市：改环境变量 `CITY`。官方文档说 `city` 参数应填 **adcode 城市编码**，但中文名一般也能识别；`src/worker.js` 里内置了常见城市名 → adcode 的映射（`CITY_ADCODE`），不在表里的会原样传给高德。也可以临时在网址后加 `?city=上海` 试。
+> Key 类型选错（比如选成 Web 端 JS API）时，页面底部会直接显示 `高德错误：INVALID_USER_SCODE`，照着改就行。
 
 ---
 

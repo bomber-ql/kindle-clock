@@ -215,7 +215,7 @@ function renderWeather(data, stale) {
 
   var rt = data.reporttime ? String(data.reporttime).slice(11, 16) : '--:--';
   var foot = '天气更新 ' + rt;
-  if (data.demo) foot += ' &#183; 示例数据';
+  if (data.demo) foot += ' &#183; ' + (data.note || '示例数据');
   if (stale) foot += ' &#183; 离线缓存';
   lastFootText = foot;
   setText('foot', foot);

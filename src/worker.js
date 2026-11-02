@@ -15,6 +15,31 @@
 var WEEK_CN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 var CACHE_SECONDS = 600; // 10 minutes
 
+/**
+ * AMap docs say the `city` parameter takes an adcode (城市编码).
+ * Chinese names usually work too, but common ones are mapped here so the
+ * request is always unambiguous. Add yours if it is missing.
+ */
+var CITY_ADCODE = {
+  '北京': '110000', '北京市': '110000',
+  '上海': '310000', '上海市': '310000',
+  '广州': '440100', '广州市': '440100',
+  '深圳': '440300', '深圳市': '440300',
+  '天津': '120000', '天津市': '120000',
+  '重庆': '500000', '重庆市': '500000',
+  '杭州': '330100', '南京': '320100', '苏州': '320500',
+  '成都': '510100', '武汉': '420100', '西安': '610100',
+  '郑州': '410100', '长沙': '430100', '青岛': '370200',
+  '沈阳': '210100', '大连': '210200', '哈尔滨': '230100', '长春': '220100',
+  '济南': '370100', '合肥': '340100', '福州': '350100', '厦门': '350200',
+  '南昌': '360100', '昆明': '530100', '贵阳': '520100', '南宁': '450100',
+  '石家庄': '130100', '太原': '140100', '兰州': '620100'
+};
+
+function cityToAdcode(city) {
+  return CITY_ADCODE[city] || city; // already an adcode, or a name AMap resolves
+}
+
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), {
     status: 200,
@@ -140,7 +165,7 @@ function demoData(city, note) {
 async function fetchAMap(key, city, extensions) {
   var url = 'https://restapi.amap.com/v3/weather/weatherInfo' +
     '?key=' + encodeURIComponent(key) +
-    '&city=' + encodeURIComponent(city) +
+    '&city=' + encodeURIComponent(cityToAdcode(city)) +
     '&extensions=' + extensions +
     '&output=JSON';
   var res = await fetch(url, { cf: { cacheTtl: CACHE_SECONDS, cacheEverything: true } });
@@ -166,12 +191,19 @@ async function handleWeather(request, env, ctx) {
     var base = await fetchAMap(key, city, 'base');
     var all = await fetchAMap(key, city, 'all');
 
+    // AMap reports failures as status "0" + info/infocode (e.g. INVALID_USER_SCODE
+    // when the key was created for the wrong platform). Surface it on the page.
+    if (!base || base.status === '0') {
+      var why = (base && (base.info || base.infocode)) || '无响应';
+      return jsonResponse(demoData(city, '高德错误：' + why));
+    }
+
     var lives = (base && base.lives && base.lives[0]) || null;
     var forecast = (all && all.forecasts && all.forecasts[0]) || null;
     var casts = (forecast && forecast.casts) || [];
 
     if (!lives) {
-      return jsonResponse(demoData(city, '高德返回异常：' + ((base && base.info) || '未知')));
+      return jsonResponse(demoData(city, '高德无实况数据：' + ((base && base.info) || '未知')));
     }
 
     var now = beijingNow();
