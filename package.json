@@ -1,0 +1,12 @@
+{
+  "name": "kindle-clock",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Time + weather dashboard for Kindle 8th gen (Basic 2016, 600x800 e-ink)",
+  "scripts": {
+    "dev": "wrangler pages dev ."
+  },
+  "devDependencies": {
+    "wrangler": "^3.60.0"
+  }
+}

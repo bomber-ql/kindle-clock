@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Kindle Clock</title>
+<link rel="stylesheet" href="clock.css">
+</head>
+<body>
+
+<div id="wrap">
+
+  <div id="time">--:--</div>
+  <div id="date">----年--月--日 星期-</div>
+
+  <div class="hr"></div>
+
+  <div id="city">--</div>
+  <div id="tempRow">
+    <span id="temp">--</span><span id="deg">&#176;</span><span id="cond"></span>
+  </div>
+  <div id="meta">湿度 -- &#183; --风 --级</div>
+
+  <div class="hr"></div>
+
+  <table id="fc" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td id="fc1a" class="fcDay">--</td>
+      <td id="fc2a" class="fcDay">--</td>
+      <td id="fc3a" class="fcDay">--</td>
+    </tr>
+    <tr>
+      <td id="fc1b" class="fcW">--</td>
+      <td id="fc2b" class="fcW">--</td>
+      <td id="fc3b" class="fcW">--</td>
+    </tr>
+    <tr>
+      <td id="fc1c" class="fcT">--</td>
+      <td id="fc2c" class="fcT">--</td>
+      <td id="fc3c" class="fcT">--</td>
+    </tr>
+  </table>
+
+  <div class="hr"></div>
+
+  <div id="greet">--</div>
+  <div id="dress">--</div>
+
+  <div class="hr hrLight"></div>
+  <div id="foot">加载中&#8230;</div>
+
+</div>
+
+<script src="clock.js"></script>
+</body>
+</html>
