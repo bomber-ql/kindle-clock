@@ -7,5 +7,11 @@
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "./public"
+  },
+  // Plain-text runtime vars live here so Git-triggered deploys stay in sync
+  // with the dashboard. AMAP_KEY is a Secret: keep it ONLY in the dashboard
+  // (Settings -> Variables and Secrets), never in this file.
+  "vars": {
+    "CITY": "北京"
   }
 }
