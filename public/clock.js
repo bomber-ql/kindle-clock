@@ -32,8 +32,16 @@ function setText(id, text) {
 
 /* ------------------------------------------------------------------ clock */
 
+/* Always render Beijing time (UTC+8), regardless of the device timezone.
+   Kindles and other devices may run on UTC, which would show the wrong hour. */
+function nowBeijing() {
+  var now = new Date();
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utcMs + 8 * 3600000);
+}
+
 function renderClock() {
-  var d = new Date();
+  var d = nowBeijing();
   setText('time', pad2(d.getHours()) + ':' + pad2(d.getMinutes()));
   setText('date', (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN[d.getDay()]);
 }
