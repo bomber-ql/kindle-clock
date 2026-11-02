@@ -131,7 +131,7 @@ body {
 
 #catbox svg {
   width: 300px;
-  height: 120px;
+  height: 185px;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -151,4 +151,4 @@ body {
 #wrap.tight #greet { font-size: 22px; }
 #wrap.tight #dress { font-size: 19px; }
 #wrap.tight #foot  { font-size: 14px; margin-top: 6px; }
-#wrap.tight #catbox svg { width: 260px; height: 104px; }
+#wrap.tight #catbox svg { width: 250px; height: 154px; }
