@@ -5,7 +5,7 @@
 
 var RELOAD_MS = 10 * 60 * 1000;   // full page refresh: clears e-ink ghosting
 var WEATHER_URL = 'api/weather';
-var WEEK_CN = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+var WEEK_CN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 var STORE_KEY = 'kindle-clock-weather';
 
 /* --- fit-to-screen (Kindle viewport height varies with firmware/toolbars) --- */
@@ -35,7 +35,7 @@ function setText(id, text) {
 function renderClock() {
   var d = new Date();
   setText('time', pad2(d.getHours()) + ':' + pad2(d.getMinutes()));
-  setText('date', d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN[d.getDay()]);
+  setText('date', (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN[d.getDay()]);
 }
 
 /* ------------------------------------------------------------ fit to screen */
@@ -181,8 +181,8 @@ function renderWeather(data, stale) {
   setText('temp', data.temperature === undefined || data.temperature === null ? '--' : String(data.temperature));
   setText('cond', data.weather || '');
 
-  var wind = (data.winddirection || '--') + '风 ' + (data.windpower || '--') + '级';
-  setText('meta', '湿度 ' + (data.humidity || '--') + '% &#183; ' + wind);
+  var wind = (data.winddirection || '--') + '风' + (data.windpower || '--') + '级';
+  setText('meta', '湿度' + (data.humidity || '--') + '% &#183; ' + wind);
 
   var fc = data.forecast || [];
   for (var i = 0; i < 3; i++) {
@@ -195,14 +195,15 @@ function renderWeather(data, stale) {
         if (p.length === 3) label = Number(p[1]) + '/' + Number(p[2]) + ' ' + (item.week || '');
       }
       var w = item.dayweather || '';
-      if (item.nightweather && item.nightweather !== item.dayweather) w += '转' + item.nightweather;
+      if (item.nightweather && item.nightweather !== item.dayweather) {
+        w = w + '/' + item.nightweather;
+      }
+      var range = (item.nighttemp || '--') + '~' + (item.daytemp || '--') + '&#176;';
       setText('fc' + n + 'a', label);
-      setText('fc' + n + 'b', w);
-      setText('fc' + n + 'c', (item.nighttemp || '--') + '&#176; ~ ' + (item.daytemp || '--') + '&#176;');
+      setText('fc' + n + 'b', w + ' ' + range);
     } else {
       setText('fc' + n + 'a', '--');
       setText('fc' + n + 'b', '--');
-      setText('fc' + n + 'c', '--');
     }
   }
 

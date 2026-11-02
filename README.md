@@ -135,6 +135,8 @@ tools/dev-server.mjs        本地预览服务器
 | 穿衣建议的判据 | `functions/api/weather.js` 的 `dressingAdvice()` |
 | 问候语时段文案 | `functions/api/weather.js` 的 `greetingFor()` |
 | 字号 / 排版 | `clock.css` |
+| 数字粗细 | `clock.css` 里 `#time` / `#temp` / `#deg` 的 `-webkit-text-stroke`（数值调小变细，设 0 关闭描边） |
+| 日期想带年份 | `clock.js` 的 `renderClock()`，在前面拼 `d.getFullYear() + '年'` |
 | 一屏装不下的兜底 | `clock.js` 的 `SAFE_MARGIN` / `TIGHT_VIEWPORT` / `MIN_ZOOM`，`clock.css` 的 `#wrap.tight` 段 |
 
 天气拿不到时，页面会退回到上一次成功的数据并标注"离线缓存"，不会开天窗。
