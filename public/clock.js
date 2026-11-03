@@ -301,6 +301,74 @@ function catScheduleTwitch() {
   }, wait);
 }
 
+/* ---- look around: pupils slide + a slight lean, like turning the head ---- */
+
+var catActing = false;   // simple mutex so duck / look never overlap
+
+function catSetPose(pupilDx, leanDeg) {
+  var pL = document.getElementById('pupilL');
+  var pR = document.getElementById('pupilR');
+  var shape = document.getElementById('catShape');
+  if (pL && pR) {
+    var t = 'translate(' + pupilDx + ' 0)';
+    pL.setAttribute('transform', t);
+    pR.setAttribute('transform', t);
+  }
+  if (shape) {
+    shape.setAttribute('transform',
+      'translate(-45 0) scale(1.3 1) rotate(' + leanDeg + ' 150 175)');
+  }
+}
+
+function catLookOnce() {
+  catActing = true;
+  var dir = Math.random() < 0.5 ? -1 : 1;
+  catSetPose(dir * 7, dir * 2.5);                 // look one way
+  window.setTimeout(function () {
+    catSetPose(-dir * 7, -dir * 2.5);             // then the other
+    window.setTimeout(function () {
+      catSetPose(0, 0);                           // back to center
+      catActing = false;
+    }, 1400);
+  }, 1400);
+}
+
+function catScheduleLook() {
+  var wait = 30000 + Math.random() * 50000;       // look around every 30-80s
+  window.setTimeout(function () {
+    if (!catActing) catLookOnce();
+    catScheduleLook();
+  }, wait);
+}
+
+/* ---- duck down: sink behind the baseline, hide a while, pop back up ---- */
+
+function catSetDuck(dy) {
+  var body = document.getElementById('catBody');
+  if (body) body.setAttribute('transform', 'translate(0 ' + dy + ')');
+}
+
+function catDuckOnce() {
+  catActing = true;
+  catSetDuck(60);
+  window.setTimeout(function () { catSetDuck(130); }, 300);
+  window.setTimeout(function () { catSetDuck(180); }, 600);   // fully hidden
+  window.setTimeout(function () { catSetDuck(110); }, 4200 + Math.random() * 3000);
+  window.setTimeout(function () { catSetDuck(50);  }, 4500 + Math.random() * 3000);
+  window.setTimeout(function () {
+    catSetDuck(0);
+    catActing = false;
+  }, 4800 + Math.random() * 3000);
+}
+
+function catScheduleDuck() {
+  var wait = 150000 + Math.random() * 210000;     // duck every 2.5-6 min
+  window.setTimeout(function () {
+    if (!catActing) catDuckOnce();
+    catScheduleDuck();
+  }, wait);
+}
+
 function catBoot() {
   var box = $('catbox');
   if (!box) return;
@@ -317,6 +385,8 @@ function catBoot() {
   }
   catScheduleBlink();
   catScheduleTwitch();
+  catScheduleLook();
+  catScheduleDuck();
 }
 
 /* ------------------------------------------------------------------ boot */

@@ -5,11 +5,19 @@
        earL / earR   = 左/右耳（抖动动画绕耳根旋转）
        eyesOpen      = 睁眼组（眨眼时隐藏）
        eyesClosed    = 闭眼组（眨眼时显示，白弧线）
+       pupilL/pupilR = 左/右瞳孔组（"转头瞭望"动画整体平移）
+       catShape      = 头+耳朵剪影组（整体加宽 30% 的缩放、"转头"时轻微倾斜）
+       catBody       = 猫身体总组（"缩下去"动画整体下移，被 catClip 裁在线后）
        head          = 头部黑块
      如果你的编辑器把 id 弄丢了也没关系，直接发我文件，我重新接动画。 -->
 <svg id="cat" width="300" height="185" viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg">
+  <!-- 剪裁：底线以上可见；"缩下去"动画时 clock.js 下移 #catBody，猫沉到线后 -->
+  <defs>
+    <clipPath id="catClip"><rect x="0" y="0" width="300" height="175"/></clipPath>
+  </defs>
+  <g id="catBody" clip-path="url(#catClip)">
   <!-- 黑色实心部分：头 + 两只耳朵（整体水平加宽 30%，绕中心 x=150 缩放） -->
-  <g fill="#000000" stroke="#000000" stroke-width="3" stroke-linejoin="round" transform="translate(-45 0) scale(1.3 1)">
+  <g id="catShape" fill="#000000" stroke="#000000" stroke-width="3" stroke-linejoin="round" transform="translate(-45 0) scale(1.3 1)">
     <path id="head" d="M 84 175 L 78 168 L 90 160 L 78 152 L 90 144 L 78 136 L 90 128 L 82 120 C 84 104 88 92 88 80 C 88 68 95 58 106 53 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 C 205 58 212 68 212 80 C 212 92 216 104 218 120 L 210 128 L 222 136 L 210 144 L 222 152 L 210 160 L 222 168 L 216 175 Z" />
     <g id="earL">
       <path d="M 86 126 C 80 100 78 66 82 34 C 84 18 88 6 93 8 C 98 11 102 26 108 38 C 114 47 121 51 130 54 L 134 88 C 120 108 100 122 86 126 Z" />
@@ -18,20 +26,25 @@
       <path d="M 214 126 C 220 100 222 66 218 34 C 216 18 212 6 207 8 C 202 11 198 26 192 38 C 186 47 179 51 170 54 L 166 88 C 180 108 200 122 214 126 Z" />
     </g>
   </g>
-  <!-- 底线（猫趴在上面的那条横线） -->
-  <path id="baseline" d="M 4 175 L 296 175" stroke="#000000" stroke-width="4" fill="none" stroke-linecap="round" />
-  <!-- 睁眼状态：白眼球 + 黑瞳孔 + 白高光 -->
+  <!-- 睁眼状态：白眼球 + 黑瞳孔 + 白高光（瞳孔分组，"转头瞭望"动画移动它们） -->
   <g id="eyesOpen">
     <ellipse cx="112" cy="130" rx="18" ry="20" fill="#ffffff"/>
-    <circle cx="119" cy="135" r="9.5" fill="#000000"/>
-    <circle cx="122" cy="131" r="3" fill="#ffffff"/>
+    <g id="pupilL">
+      <circle cx="119" cy="135" r="9.5" fill="#000000"/>
+      <circle cx="122" cy="131" r="3" fill="#ffffff"/>
+    </g>
     <ellipse cx="188" cy="130" rx="18" ry="20" fill="#ffffff"/>
-    <circle cx="181" cy="135" r="9.5" fill="#000000"/>
-    <circle cx="184" cy="131" r="3" fill="#ffffff"/>
+    <g id="pupilR">
+      <circle cx="181" cy="135" r="9.5" fill="#000000"/>
+      <circle cx="184" cy="131" r="3" fill="#ffffff"/>
+    </g>
   </g>
   <!-- 闭眼状态（平时隐藏）：两条白色弯线 -->
   <g id="eyesClosed" display="none" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round">
     <path d="M 94 132 Q 112 143 130 132" />
     <path d="M 170 132 Q 188 143 206 132" />
   </g>
+  </g>
+  <!-- 底线（猫趴在上面的那条横线，固定不动） -->
+  <path id="baseline" d="M 4 175 L 296 175" stroke="#000000" stroke-width="4" fill="none" stroke-linecap="round" />
 </svg>
