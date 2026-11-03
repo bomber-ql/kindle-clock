@@ -350,15 +350,16 @@ function catSetDuck(dy) {
 
 function catDuckOnce() {
   catActing = true;
+  var hideFor = 4200 + Math.random() * 3000;   // decided once, steps stay ordered
   catSetDuck(60);
   window.setTimeout(function () { catSetDuck(130); }, 300);
   window.setTimeout(function () { catSetDuck(180); }, 600);   // fully hidden
-  window.setTimeout(function () { catSetDuck(110); }, 4200 + Math.random() * 3000);
-  window.setTimeout(function () { catSetDuck(50);  }, 4500 + Math.random() * 3000);
+  window.setTimeout(function () { catSetDuck(110); }, hideFor);
+  window.setTimeout(function () { catSetDuck(50);  }, hideFor + 300);
   window.setTimeout(function () {
     catSetDuck(0);
     catActing = false;
-  }, 4800 + Math.random() * 3000);
+  }, hideFor + 600);
 }
 
 function catScheduleDuck() {

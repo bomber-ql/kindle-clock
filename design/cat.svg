@@ -15,7 +15,10 @@
   <defs>
     <clipPath id="catClip"><rect x="0" y="0" width="300" height="175"/></clipPath>
   </defs>
-  <g id="catBody" clip-path="url(#catClip)">
+  <!-- 剪裁必须挂在不动的父级上：SVG 的 clip-path 会随元素自身 transform 移动，
+       挂在 catBody 上会让剪裁窗口跟着猫一起下沉（眼睛会越过底线露出来） -->
+  <g id="catViewport" clip-path="url(#catClip)">
+  <g id="catBody">
   <!-- 黑色实心部分：头 + 两只耳朵（整体水平加宽 30%，绕中心 x=150 缩放） -->
   <g id="catShape" fill="#000000" stroke="#000000" stroke-width="3" stroke-linejoin="round" transform="translate(-45 0) scale(1.3 1)">
     <path id="head" d="M 84 175 L 78 168 L 90 160 L 78 152 L 90 144 L 78 136 L 90 128 L 82 120 C 84 104 88 92 88 80 C 88 68 95 58 106 53 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 l 8 -4 l 8 4 C 205 58 212 68 212 80 C 212 92 216 104 218 120 L 210 128 L 222 136 L 210 144 L 222 152 L 210 160 L 222 168 L 216 175 Z" />
@@ -43,6 +46,7 @@
   <g id="eyesClosed" display="none" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round">
     <path d="M 94 132 Q 112 143 130 132" />
     <path d="M 170 132 Q 188 143 206 132" />
+  </g>
   </g>
   </g>
   <!-- 底线（猫趴在上面的那条横线，固定不动） -->
